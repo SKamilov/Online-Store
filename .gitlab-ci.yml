@@ -1,0 +1,57 @@
+image: docker:24.0
+services:
+  - docker:dind
+
+variables:
+  DOCKER_DRIVER: overlay2
+  REGISTRY: $CI_REGISTRY
+
+stages:
+  - build
+  - test
+  - sonar
+  - deploy
+
+before_script:
+  - echo "$CI_REGISTRY_PASSWORD" | docker login -u "$CI_REGISTRY_USER" --password-stdin $REGISTRY
+
+build_backend:
+  stage: build
+  script:
+    - docker build -t $REGISTRY/momo/backend:$CI_PIPELINE_ID -f backend/Dockerfile .
+    - docker push $REGISTRY/momo/backend:$CI_PIPELINE_ID
+  artifacts:
+    expire_in: 1 week
+    paths: []
+
+build_frontend:
+  stage: build
+  script:
+    - docker build -t $REGISTRY/momo/frontend:$CI_PIPELINE_ID -f frontend/Dockerfile .
+    - docker push $REGISTRY/momo/frontend:$CI_PIPELINE_ID
+
+unit_tests:
+  stage: test
+  image: golang:1.22
+  script:
+    - cd backend && go test ./...
+
+sonar_scan:
+  stage: sonar
+  image: sonarsource/sonar-scanner-cli:latest
+  script:
+    - sonar-scanner -Dsonar.host.url=$SONAR_HOST_URL -Dsonar.login=$SONAR_TOKEN -Dsonar.projectKey=momo-store
+
+deploy:
+  stage: deploy
+  image: alpine/helm:3.14.0
+  script:
+    - helm repo add nexus-helm $HELM_REPO_URL --username $NEXUS_USER --password $NEXUS_PASS
+    - helm repo update
+    - helm package infra/helm/momo-store --version $CI_PIPELINE_ID --app-version $CI_PIPELINE_ID
+    - curl -u $NEXUS_USER:$NEXUS_PASS --upload-file momo-store-$CI_PIPELINE_ID.tgz $HELM_REPO_URL/
+    - helm upgrade --install momo-store momo-store-$CI_PIPELINE_ID.tgz \
+        --set image.registry=$REGISTRY \
+        --set backend.tag=$CI_PIPELINE_ID \
+        --set frontend.tag=$CI_PIPELINE_ID \
+        --kubeconfig "$KUBE_CONFIG"

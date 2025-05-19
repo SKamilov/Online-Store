@@ -1,0 +1,17 @@
+image:
+  registry: https://nexus.praktikum-services.tech:8082
+
+backend:
+  repository: momo/backend
+  tag: "latest"
+  port: 8081
+  replicas: 1
+
+frontend:
+  repository: momo/frontend
+  tag: "latest"
+  port: 80
+  replicas: 1
+
+ingress:
+  host: http://127.0.0.1

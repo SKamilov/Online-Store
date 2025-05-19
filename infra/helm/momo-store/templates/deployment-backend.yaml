@@ -1,0 +1,32 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: momo-backend
+spec:
+  replicas: {{ .Values.backend.replicas }}
+  selector:
+    matchLabels:
+      app: momo-backend
+  template:
+    metadata:
+      labels:
+        app: momo-backend
+    spec:
+      imagePullSecrets:
+        - name: nexus-regcred
+      containers:
+        - name: backend
+          image: "{{ .Values.image.registry }}/{{ .Values.backend.repository }}:{{ .Values.backend.tag }}"
+          ports:
+            - containerPort: {{ .Values.backend.port }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: momo-backend
+spec:
+  selector:
+    app: momo-backend
+  ports:
+    - port: {{ .Values.backend.port }}
+      targetPort: {{ .Values.backend.port }}
