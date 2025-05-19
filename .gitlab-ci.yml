@@ -1,5 +1,4 @@
 variables:
-  DOCKER_DRIVER: overlay2
   REGISTRY: $CI_REGISTRY
 
 stages:
@@ -8,8 +7,6 @@ stages:
   - sonar
   - deploy
 
-before_script:
-  - echo "$CI_REGISTRY_PASSWORD" | docker login -u "$CI_REGISTRY_USER" --password-stdin $REGISTRY
 
 build_backend:
   stage: build
