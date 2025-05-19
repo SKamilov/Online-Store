@@ -4,7 +4,8 @@ WORKDIR /app
 COPY go.mod go.sum ./
 RUN go mod download
 COPY . .
-RUN CGO_ENABLED=0 go build -o momo-api
+WORKDIR /app/cmd/api
+RUN CGO_ENABLED=0 go build -o /app/momo-api
 
 # runtime
 FROM bellsoft/liberica-runtime-container:jre-17-slim-musl
