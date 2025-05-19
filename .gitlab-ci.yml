@@ -54,7 +54,8 @@ deploy:
     - helm repo update
     - helm package infra/helm/momo-store --version $CI_PIPELINE_ID --app-version $CI_PIPELINE_ID
     - curl -u $NEXUS_USER:$NEXUS_PASS --upload-file momo-store-$CI_PIPELINE_ID.tgz $HELM_REPO_URL/
-    - helm upgrade --install momo-store momo-store-$CI_PIPELINE_ID.tgz \
+    - |
+      helm upgrade --install momo-store momo-store-$CI_PIPELINE_ID.tgz \
         --set image.registry=$REGISTRY \
         --set backend.tag=$CI_PIPELINE_ID \
         --set frontend.tag=$CI_PIPELINE_ID \
