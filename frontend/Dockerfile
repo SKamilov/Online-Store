@@ -3,6 +3,8 @@ WORKDIR /app
 COPY frontend/package*.json ./
 RUN npm ci
 COPY frontend/ .
+ENV NODE_OPTIONS=--openssl-legacy-provider
+RUN npm run build
 RUN npm run build
 
 FROM nginx:alpine

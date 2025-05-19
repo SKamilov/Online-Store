@@ -7,7 +7,7 @@ COPY backend/ .
 RUN CGO_ENABLED=0 go build -o momo-api
 
 # runtime
-FROM gcr.io/distroless/base-debian11
+FROM bellsoft/liberica-runtime-container:jre-17-slim-musl
 COPY --from=builder /app/momo-api /momo-api
 EXPOSE 8081
 ENTRYPOINT ["/momo-api"]
