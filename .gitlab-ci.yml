@@ -1,14 +1,5 @@
-image: docker:24.0
-
-services:
-  - name: docker:24.0-dind
-    alias: docker
-    command: ["--tls=false"]
-
 variables:
   DOCKER_DRIVER: overlay2
-  DOCKER_TLS_CERTDIR: ""
-  DOCKER_HOST: tcp://docker:2375
   REGISTRY: $CI_REGISTRY
 
 stages:
@@ -22,15 +13,29 @@ before_script:
 
 build_backend:
   stage: build
+  image: gcr.io/kaniko-project/executor:debug
+  variables:
+    DOCKER_CONFIG: /kaniko/.docker/
   script:
-    - docker build -t $REGISTRY/momo/backend:$CI_PIPELINE_ID -f backend/Dockerfile .
-    - docker push $REGISTRY/momo/backend:$CI_PIPELINE_ID
+    - mkdir -p /kaniko/.docker
+    - echo "{\"auths\":{\"$CI_REGISTRY\":{\"username\":\"$CI_REGISTRY_USER\",\"password\":\"$CI_REGISTRY_PASSWORD\"}}}" > /kaniko/.docker/config.json
+    - /kaniko/executor
+      --context "${CI_PROJECT_DIR}"
+      --dockerfile "${CI_PROJECT_DIR}/backend/Dockerfile"
+      --destination "$REGISTRY/momo/backend:$CI_PIPELINE_ID"
 
 build_frontend:
   stage: build
+  image: gcr.io/kaniko-project/executor:debug
+  variables:
+    DOCKER_CONFIG: /kaniko/.docker/
   script:
-    - docker build -t $REGISTRY/momo/frontend:$CI_PIPELINE_ID -f frontend/Dockerfile .
-    - docker push $REGISTRY/momo/frontend:$CI_PIPELINE_ID
+    - mkdir -p /kaniko/.docker
+    - echo "{\"auths\":{\"$CI_REGISTRY\":{\"username\":\"$CI_REGISTRY_USER\",\"password\":\"$CI_REGISTRY_PASSWORD\"}}}" > /kaniko/.docker/config.json
+    - /kaniko/executor
+      --context "${CI_PROJECT_DIR}"
+      --dockerfile "${CI_PROJECT_DIR}/frontend/Dockerfile"
+      --destination "$REGISTRY/momo/frontend:$CI_PIPELINE_ID"
 
 unit_tests:
   stage: test
