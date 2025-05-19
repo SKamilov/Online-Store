@@ -1,12 +1,13 @@
 variables:
   REGISTRY: $CI_REGISTRY
+  CI_REGISTRY_IMAGE_BACKEND: $CI_REGISTRY_IMAGE/backend
+  CI_REGISTRY_IMAGE_FRONTEND: $CI_REGISTRY_IMAGE/frontend
 
 stages:
   - build
   - test
   - sonar
   - deploy
-
 
 build_backend:
   stage: build
@@ -16,10 +17,11 @@ build_backend:
   script:
     - mkdir -p /kaniko/.docker
     - echo "{\"auths\":{\"$CI_REGISTRY\":{\"username\":\"$CI_REGISTRY_USER\",\"password\":\"$CI_REGISTRY_PASSWORD\"}}}" > /kaniko/.docker/config.json
-    - /kaniko/executor
+    - >
+      /kaniko/executor
       --context "${CI_PROJECT_DIR}/backend"
       --dockerfile "${CI_PROJECT_DIR}/backend/Dockerfile"
-      --destination "$CI_REGISTRY_IMAGE/backend:$CI_PIPELINE_ID"
+      --destination "$CI_REGISTRY_IMAGE_BACKEND:$CI_PIPELINE_ID"
 
 build_frontend:
   stage: build
@@ -29,10 +31,11 @@ build_frontend:
   script:
     - mkdir -p /kaniko/.docker
     - echo "{\"auths\":{\"$CI_REGISTRY\":{\"username\":\"$CI_REGISTRY_USER\",\"password\":\"$CI_REGISTRY_PASSWORD\"}}}" > /kaniko/.docker/config.json
-    - /kaniko/executor
+    - >
+      /kaniko/executor
       --context "${CI_PROJECT_DIR}"
       --dockerfile "${CI_PROJECT_DIR}/frontend/Dockerfile"
-      --destination "$CI_REGISTRY_IMAGE/frontend:$CI_PIPELINE_ID"
+      --destination "$CI_REGISTRY_IMAGE_FRONTEND:$CI_PIPELINE_ID"
 
 unit_tests:
   stage: test
@@ -44,7 +47,7 @@ sonar_scan:
   stage: sonar
   image: sonarsource/sonar-scanner-cli:latest
   script:
-  - sonar-scanner -Dsonar.host.url=$SONAR_HOST_URL -Dsonar.login=$SONAR_TOKEN -Dsonar.projectKey=momo-store
+    - sonar-scanner -Dsonar.host.url=$SONAR_HOST_URL -Dsonar.login=$SONAR_TOKEN -Dsonar.projectKey=momo-store
 
 deploy:
   stage: deploy
