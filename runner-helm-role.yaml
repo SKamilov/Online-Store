@@ -2,7 +2,7 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
   name: helm-runner-role
-  namespace: std-033-40
+  namespace: runner
 rules:
   - apiGroups: [""]
     resources: ["secrets"]
@@ -19,11 +19,11 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
   name: helm-runner-binding
-  namespace: std-033-40
+  namespace: runner
 subjects:
   - kind: ServiceAccount
-    name: default          # ← если у тебя runner работает под другим сервис-аккаунтом, укажи его имя
-    namespace: std-033-40
+    name: default
+    namespace: runner
 roleRef:
   kind: Role
   name: helm-runner-role

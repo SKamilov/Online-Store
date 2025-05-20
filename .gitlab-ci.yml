@@ -53,6 +53,8 @@ deploy:
   stage: deploy
   image: alpine/helm:3.14.0
   script:
+    - echo "SLEEP 300s FOR DEBUG"
+    - sleep 300
     - helm repo add nexus-helm $HELM_REPO_URL --username $NEXUS_USER --password $NEXUS_PASS
     - helm repo update
     - helm package infra/helm/momo-store --version $CI_PIPELINE_ID --app-version $CI_PIPELINE_ID
