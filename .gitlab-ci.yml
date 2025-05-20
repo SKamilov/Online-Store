@@ -4,7 +4,6 @@ variables:
   CI_REGISTRY_IMAGE_FRONTEND: $CI_REGISTRY_IMAGE/frontend
 
 stages:
-  - infra
   - build
   - test
   - sonar
