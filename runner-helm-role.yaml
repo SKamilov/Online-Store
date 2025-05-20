@@ -2,7 +2,7 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
   name: helm-runner-role
-  namespace: runner
+  namespace: gitlab-runner
 rules:
   - apiGroups: [""]
     resources: ["secrets"]
@@ -19,11 +19,11 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
   name: helm-runner-binding
-  namespace: runner
+  namespace: gitlab-runner
 subjects:
   - kind: ServiceAccount
     name: default
-    namespace: runner
+    namespace: gitlab-runner
 roleRef:
   kind: Role
   name: helm-runner-role
