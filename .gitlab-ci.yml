@@ -1,62 +1,101 @@
 variables:
-  REGISTRY: $CI_REGISTRY
-  CI_REGISTRY_IMAGE_BACKEND: $CI_REGISTRY_IMAGE/backend
-  CI_REGISTRY_IMAGE_FRONTEND: $CI_REGISTRY_IMAGE/frontend
+  REGISTRY:           $CI_REGISTRY
+  IMAGE_BACKEND:      $CI_REGISTRY_IMAGE/backend
+  IMAGE_FRONTEND:     $CI_REGISTRY_IMAGE/frontend
+  TF_DIR: infra/terraform
 
 stages:
+  - infra
   - build
   - test
   - sonar
   - deploy
 
+# ----------  Terraform  ----------
+.tf_template: &tf_template
+  image: hashicorp/terraform:1.8
+  before_script:
+    - terraform -chdir=$TF_DIR init
+  cache:
+    paths: [ $TF_DIR/.terraform ]
+    key: $CI_COMMIT_REF_SLUG
+
+terraform:plan:
+  <<: *tf_template
+  stage: infra
+  script:
+    - terraform -chdir=$TF_DIR plan -out=tfplan
+  artifacts:
+    paths: [ $TF_DIR/tfplan ]
+    expire_in: 2 h                    # автоматическая чистка
+
+terraform:apply:
+  <<: *tf_template
+  stage: infra
+  needs: [ "terraform:plan" ]
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main"'   # только в main / защита от MR-ов
+  script:
+    - terraform -chdir=$TF_DIR apply -auto-approve tfplan
+
+# ----------  Build / Test / Sonar как были ----------
 build_backend:
   stage: build
   image: gcr.io/kaniko-project/executor:debug
-  variables:
-    DOCKER_CONFIG: /kaniko/.docker/
+  variables: { DOCKER_CONFIG: /kaniko/.docker }
   script:
     - mkdir -p /kaniko/.docker
-    - echo "{\"auths\":{\"$CI_REGISTRY\":{\"username\":\"$CI_REGISTRY_USER\",\"password\":\"$CI_REGISTRY_PASSWORD\"}}}" > /kaniko/.docker/config.json
+    - echo "{\"auths\":{\"$CI_REGISTRY\":{\"username\":\"$CI_REGISTRY_USER\",\"password\":\"$CI_REGISTRY_PASSWORD\"}}}" \
+        > /kaniko/.docker/config.json
     - >
       /kaniko/executor
       --context "${CI_PROJECT_DIR}/backend"
       --dockerfile "${CI_PROJECT_DIR}/backend/Dockerfile"
-      --destination "$CI_REGISTRY_IMAGE_BACKEND:$CI_PIPELINE_ID"
+      --destination "${IMAGE_BACKEND}:$CI_PIPELINE_ID"
 
 build_frontend:
   stage: build
   image: gcr.io/kaniko-project/executor:debug
-  variables:
-    DOCKER_CONFIG: /kaniko/.docker/
+  variables: { DOCKER_CONFIG: /kaniko/.docker }
   script:
     - mkdir -p /kaniko/.docker
-    - echo "{\"auths\":{\"$CI_REGISTRY\":{\"username\":\"$CI_REGISTRY_USER\",\"password\":\"$CI_REGISTRY_PASSWORD\"}}}" > /kaniko/.docker/config.json
+    - echo "{\"auths\":{\"$CI_REGISTRY\":{\"username\":\"$CI_REGISTRY_USER\",\"password\":\"$CI_REGISTRY_PASSWORD\"}}}" \
+        > /kaniko/.docker/config.json
     - >
       /kaniko/executor
       --context "${CI_PROJECT_DIR}"
       --dockerfile "${CI_PROJECT_DIR}/frontend/Dockerfile"
-      --destination "$CI_REGISTRY_IMAGE_FRONTEND:$CI_PIPELINE_ID"
+      --destination "${IMAGE_FRONTEND}:$CI_PIPELINE_ID"
 
 unit_tests:
   stage: test
   image: golang:1.22
-  script:
-    - cd backend && go test ./...
+  script: [ "cd backend && go test ./..." ]
 
 sonar_scan:
   stage: sonar
   image: sonarsource/sonar-scanner-cli:latest
   script:
-    - sonar-scanner -Dsonar.host.url=$SONAR_HOST_URL -Dsonar.login=$SONAR_TOKEN -Dsonar.projectKey=momo-store
+    - |
+      sonar-scanner \
+        -Dsonar.host.url=$SONAR_HOST_URL \
+        -Dsonar.login=$SONAR_TOKEN \
+        -Dsonar.projectKey=momo-store
 
+# ----------  Deploy (Helm) ----------
 deploy:
   stage: deploy
   image: alpine/helm:3.14.0
+  needs:
+    - "terraform:apply"
+    - "build_backend"
+    - "build_frontend"
   script:
     - helm repo add nexus-helm $HELM_REPO_URL --username $NEXUS_USER --password $NEXUS_PASS
     - helm repo update
     - helm package infra/helm/momo-store --version $CI_PIPELINE_ID --app-version $CI_PIPELINE_ID
-    - curl -u $NEXUS_USER:$NEXUS_PASS --upload-file momo-store-$CI_PIPELINE_ID.tgz $HELM_REPO_URL/
+    - curl -u $NEXUS_USER:$NEXUS_PASS \
+        --upload-file momo-store-$CI_PIPELINE_ID.tgz $HELM_REPO_URL/
     - |
       helm upgrade --install momo-store momo-store-$CI_PIPELINE_ID.tgz \
         --set image.registry=$REGISTRY \
