@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: momo-log-dashboard
+  namespace: monitoring
+  labels:
+    grafana_dashboard: "1"
+data:
+  momo-log-dashboard.json: |
+    {{- (.Files.Get "infra/monitoring/grafana/dashboards/momo-log-dashboard.json") | nindent 4 }}

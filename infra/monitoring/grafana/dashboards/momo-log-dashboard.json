@@ -1,0 +1,61 @@
+{
+  "id": null,
+  "title": "Momo-Store • Logs",
+  "uid": "momo-log",
+  "tags": ["momo", "logs"],
+  "time": { "from": "now-1h", "to": "now" },
+  "timezone": "browser",
+  "schemaVersion": 31,
+  "version": 1,
+  "panels": [
+    {
+      "type": "timeseries",
+      "title": "Error rate (5 m)",
+      "datasource": "Loki",
+      "targets": [
+        {
+          "expr": "sum by(level) (rate({app=\"momo-backend\"} |= `ERROR` [5m]))",
+          "legendFormat": "{{level}}"
+        }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "Warn rate (5 m)",
+      "datasource": "Loki",
+      "targets": [
+        {
+          "expr": "sum by(level) (rate({app=\"momo-backend\"} |= `WARN` [5m]))",
+          "legendFormat": "{{level}}"
+        }
+      ]
+    },
+    {
+      "type": "table",
+      "title": "Top-10 error messages (1 h)",
+      "datasource": "Loki",
+      "targets": [
+        {
+          "expr": "topk(10, count_over_time({app=\"momo-backend\"} |= `ERROR` | unwrap msg [1h]))",
+          "legendFormat": "{{msg}}"
+        }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "Nginx 4xx / 5xx (frontend)",
+      "datasource": "Loki",
+      "targets": [
+        {
+          "expr": "sum by(status) (rate({app=\"momo-frontend\"} |~ `\" 5[0-9]{2} \"` [5m]))",
+          "legendFormat": "{{status}}"
+        },
+        {
+          "expr": "sum by(status) (rate({app=\"momo-frontend\"} |~ `\" 4[0-9]{2} \"` [5m]))",
+          "legendFormat": "{{status}}"
+        }
+      ],
+      "stack": "normal"
+    }
+  ]
+}
