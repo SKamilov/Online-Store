@@ -14,4 +14,5 @@ frontend:
   replicas: 1
 
 ingress:
-  host: momo-store.127-0-0-1.nip.io
+  host: 158-160-151-41.nip.io
+  className: nginx
