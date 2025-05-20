@@ -14,4 +14,4 @@ frontend:
   replicas: 1
 
 ingress:
-  host: http://127.0.0.1
+  host: momo-store.127-0-0-1.nip.io
