@@ -6,16 +6,11 @@ metadata:
   annotations:
     nginx.ingress.kubernetes.io/use-regex: "true"
 spec:
-  ingressClassName: nginx
-  tls:
-    - hosts:
-        - 158-160-151-41.nip.io
-      secretName: momo-store-tls
   rules:
     - host: 158-160-151-41.nip.io
       http:
         paths:
-          - path: /api(/|$)(.*)
+          - path: /(api|auth|products|categories|csrf|admin)(/|$)(.*)
             pathType: ImplementationSpecific
             backend:
               service:
