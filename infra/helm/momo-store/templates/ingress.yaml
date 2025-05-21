@@ -10,7 +10,6 @@ spec:
     - host: 158-160-151-41.nip.io
       http:
         paths:
-          # Все API/бэкенд маршруты — идут на backend
           - path: "/(api|auth|products|categories|csrf|admin)(/|$)(.*)"
             pathType: ImplementationSpecific
             backend:
@@ -18,9 +17,8 @@ spec:
                 name: momo-backend
                 port:
                   number: 8081
-          # Всё остальное — на фронтенд (ВАЖНО: просто /)
           - path: "/"
-            pathType: ImplementationSpecific
+            pathType: Prefix
             backend:
               service:
                 name: momo-frontend
