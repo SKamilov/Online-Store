@@ -10,15 +10,50 @@ spec:
     - host: 158-160-151-41.nip.io
       http:
         paths:
-          - path: ^/(api|auth|products|categories|csrf|admin)(/|$)
+          - path: /api(/|$)(.*)
             pathType: ImplementationSpecific
             backend:
               service:
                 name: momo-backend
                 port:
                   number: 8081
-          - path: /
-            pathType: Prefix
+          - path: /auth(/|$)(.*)
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: momo-backend
+                port:
+                  number: 8081
+          - path: /products(/|$)(.*)
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: momo-backend
+                port:
+                  number: 8081
+          - path: /categories(/|$)(.*)
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: momo-backend
+                port:
+                  number: 8081
+          - path: /csrf(/|$)(.*)
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: momo-backend
+                port:
+                  number: 8081
+          - path: /admin(/|$)(.*)
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: momo-backend
+                port:
+                  number: 8081
+          - path: /(.*)
+            pathType: ImplementationSpecific
             backend:
               service:
                 name: momo-frontend
