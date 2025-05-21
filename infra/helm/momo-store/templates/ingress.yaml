@@ -3,6 +3,8 @@ kind: Ingress
 metadata:
   name: momo-store
   namespace: gitlab-runner
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /$2
 spec:
   rules:
     - host: 158-160-151-41.nip.io
