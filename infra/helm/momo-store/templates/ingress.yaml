@@ -2,13 +2,18 @@ apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: momo-store
+  namespace: gitlab-runner
   annotations:
-    cert-manager.io/cluster-issuer: "letsencrypt-prod"
     nginx.ingress.kubernetes.io/rewrite-target: /$1
+    nginx.ingress.kubernetes.io/use-regex: "true"
 spec:
   ingressClassName: nginx
+  tls:
+    - hosts:
+        - 158-160-151-41.nip.io
+      secretName: momo-store-tls
   rules:
-    - host: {{ .Values.ingress.host }}
+    - host: 158-160-151-41.nip.io
       http:
         paths:
           - path: /api/(.*)
@@ -17,15 +22,11 @@ spec:
               service:
                 name: momo-backend
                 port:
-                  number: {{ .Values.backend.port }}
+                  number: 8081
           - path: /
             pathType: Prefix
             backend:
               service:
                 name: momo-frontend
                 port:
-                  number: {{ .Values.frontend.port }}
-  tls:
-    - hosts:
-        - {{ .Values.ingress.host }}
-      secretName: momo-store-tls
+                  number: 80
