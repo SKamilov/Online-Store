@@ -14,5 +14,5 @@ frontend:
   replicas: 1
 
 ingress:
-  host: 158-160-151-41.nip.io
+  host: 158-160-185-251.nip.io
   className: nginx
