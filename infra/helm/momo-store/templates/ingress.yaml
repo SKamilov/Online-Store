@@ -4,13 +4,13 @@ metadata:
   name: momo-store
   annotations:
     cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    nginx.ingress.kubernetes.io/rewrite-target: /$2
 spec:
-  ingressClassName: nginx
   rules:
     - host: {{ .Values.ingress.host }}
       http:
         paths:
-          - path: /api/
+          - path: /api(/|$)(.*)
             pathType: Prefix
             backend:
               service:
