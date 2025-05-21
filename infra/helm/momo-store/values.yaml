@@ -1,15 +1,15 @@
 image:
-  registry: nexus.praktikum-services.tech:8082
+  registry: gitlab.praktikum-services.ru:5050
 
 backend:
-  repository: momo/backend
-  tag: "latest"
+  repository: std-033-40/momo-store/backend
+  tag: "2089943"
   port: 8081
   replicas: 1
 
 frontend:
-  repository: momo/frontend
-  tag: "latest"
+  repository: std-033-40/momo-store/frontend
+  tag: "2089943"
   port: 80
   replicas: 1
 
