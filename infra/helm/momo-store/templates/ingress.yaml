@@ -4,56 +4,56 @@ metadata:
   name: momo-store
   namespace: gitlab-runner
   annotations:
-    nginx.ingress.kubernetes.io/use-regex: "true"
+    nginx.ingress.kubernetes.io/use-regex: "false"
 spec:
   rules:
     - host: 158-160-151-41.nip.io
       http:
         paths:
-          - path: /api(/|$)(.*)
-            pathType: ImplementationSpecific
+          - path: /api
+            pathType: Prefix
             backend:
               service:
                 name: momo-backend
                 port:
                   number: 8081
-          - path: /auth(/|$)(.*)
-            pathType: ImplementationSpecific
+          - path: /auth
+            pathType: Prefix
             backend:
               service:
                 name: momo-backend
                 port:
                   number: 8081
-          - path: /products(/|$)(.*)
-            pathType: ImplementationSpecific
+          - path: /products
+            pathType: Prefix
             backend:
               service:
                 name: momo-backend
                 port:
                   number: 8081
-          - path: /categories(/|$)(.*)
-            pathType: ImplementationSpecific
+          - path: /categories
+            pathType: Prefix
             backend:
               service:
                 name: momo-backend
                 port:
                   number: 8081
-          - path: /csrf(/|$)(.*)
-            pathType: ImplementationSpecific
+          - path: /csrf
+            pathType: Prefix
             backend:
               service:
                 name: momo-backend
                 port:
                   number: 8081
-          - path: /admin(/|$)(.*)
-            pathType: ImplementationSpecific
+          - path: /admin
+            pathType: Prefix
             backend:
               service:
                 name: momo-backend
                 port:
                   number: 8081
-          - path: /(.*)
-            pathType: ImplementationSpecific
+          - path: /
+            pathType: Prefix
             backend:
               service:
                 name: momo-frontend
