@@ -13,7 +13,7 @@ spec:
         app: momo-frontend
     spec:
       imagePullSecrets:
-        - name: nexus-regcred
+        - name: gitlab-regcred
       containers:
         - name: frontend
           image: "{{ .Values.image.registry }}/{{ .Values.frontend.repository }}:{{ .Values.frontend.tag }}"
