@@ -3,21 +3,54 @@ kind: Ingress
 metadata:
   name: momo-store
   namespace: gitlab-runner
-  annotations:
-    nginx.ingress.kubernetes.io/use-regex: "true"
 spec:
   rules:
     - host: 158-160-151-41.nip.io
       http:
         paths:
-          - path: "/(api|auth|products|categories|csrf|admin)(/|$)(.*)"
-            pathType: ImplementationSpecific
+          - path: /api
+            pathType: Prefix
             backend:
               service:
                 name: momo-backend
                 port:
                   number: 8081
-          - path: "/"
+          - path: /auth
+            pathType: Prefix
+            backend:
+              service:
+                name: momo-backend
+                port:
+                  number: 8081
+          - path: /products
+            pathType: Prefix
+            backend:
+              service:
+                name: momo-backend
+                port:
+                  number: 8081
+          - path: /categories
+            pathType: Prefix
+            backend:
+              service:
+                name: momo-backend
+                port:
+                  number: 8081
+          - path: /csrf
+            pathType: Prefix
+            backend:
+              service:
+                name: momo-backend
+                port:
+                  number: 8081
+          - path: /admin
+            pathType: Prefix
+            backend:
+              service:
+                name: momo-backend
+                port:
+                  number: 8081
+          - path: /
             pathType: Prefix
             backend:
               service:
